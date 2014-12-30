@@ -1,3 +1,4 @@
+%global _scl_prefix /opt/cpanel
 %global scl_name_base    php
 %global scl_name_version 54
 %global scl              %{scl_name_base}%{scl_name_version}
@@ -25,7 +26,7 @@ BuildRequires: iso-codes
 
 Requires:      %{?scl_prefix}php-common
 Requires:      %{?scl_prefix}php-cli
-Requires:      %{?scl_prefix}php-pear
+#Requires:      %{?scl_prefix}php-pear
 
 %description
 This is the main package for %scl Software Collection,
