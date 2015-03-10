@@ -4,20 +4,11 @@
 #
 #-------------------------------------------------------------------------------------
 
-# name of the file in the SPECS directory
-SPEC := php54.spec
+# the upstream project
+OBS_PROJECT := EA4
 
-# name of the file in the SRPMS directory
-SRPM := php54-1.1-6.el6.src.rpm
-
-# name of the configuration file in /etc/mock (excluding .cfg)
-CFG := ea4-php54-cent6-x86_64
-
-# additional definitions to pass to Mock
-MOCK_DEFS := -D "scl php54" -D "runselftest 0"
-
-# clean up build environment after build complete
-CLEANUP := 1
+# the package name in OBS
+OBS_PACKAGE := php54-php-meta
 
 #-------------------------------------------------------------------------------------
 #
@@ -25,67 +16,80 @@ CLEANUP := 1
 #
 #-------------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------------
+#
+# TODO
+#
+#-------------------------------------------------------------------------------------
+# - Cleaning the OBS target when files are removed from git
+# - Add a obs_dependencies target to rebuild the package and all of it's dependencies
+# - Create a devel RPM that contains all of these Makefile stubs.  This way it's
+#   in one place, instead of being copied everywhere.
+#
+#
+
 #-------------------
 # Variables
 #-------------------
 
-whoami := $(shell whoami)
+ERRMSG := "Please read, https://cpanel.wiki/display/AL/Setting+up+yourself+for+using+OBS"
+OBS_USERNAME := $(shell grep -A5 '[build.dev.cpanel.net]' ~/.oscrc | awk -F= '/user=/ {print $$2}')
+# NOTE: OBS only like ascii alpha-numeric characters
+GIT_BRANCH := $(shell git branch | awk '/^*/ { print $$2 }' | tr -c [A-Za-z0-9] _)
+BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
+OBS_WORKDIR := $(BUILD_TARGET)/$(OBS_PACKAGE)
 
-ifeq (root,$(whoami))
-	MOCK := /usr/bin/mock
-else
-	MOCK := /usr/sbin/mock
-endif
-
-CACHE := /var/cache/mock/$(CFG)/root_cache/cache.tar.gz
-MOCK_CFG := /etc/mock/$(CFG).cfg
-
-ifeq ($(CLEANUP),0)
-	MOCK_DEFS := $(MOCK_DEFS) --no-cleanup-after
-endif
-
-.PHONY: all pristine clean
+.PHONY: all local obs check build-clean build-init
 
 #-----------------------
 # Primary make targets
 #-----------------------
 
-# (Re)Build SRPMs and RPMs
-all: $(MOCK_CFG) clean make-build
+all: local
 
-# Same as 'all', but also rebuilds all cached data
-pristine: $(MOCK_CFG) clean make-pristine make-build
+# Builds the RPM on your local machine using the OBS infrstructure.
+# This is useful to test before submitting to OBS.
+local: check
+	make build-init
+	cd OBS/$(OBS_WORKDIR) && osc build --noverify --disable-debuginfo
+	make build-clean
 
-# Remove per-build temp directory
-clean:
-	rm -rf RPMS SRPMS
-	$(MOCK) -v -r $(CFG) --clean
+# Commits local file changes to OBS, and ensures a build is performed.
+obs: check
+	make build-init
+	cd OBS/$(OBS_WORKDIR) && osc add `osc status | awk '/^M|\?/ {print $$2}' | tr "\n" " "` 2> /dev/null || exit 0
+	cd OBS/$(OBS_WORKDIR) && osc delete `osc status | awk '/^!/ {print $$2}' | tr "\n" " "` 2> /dev/null || exit 0
+	cd OBS/$(OBS_WORKDIR) && osc ci -m "Makefile check-in - $(shell date)"
+	make build-clean
+
+# Debug target: Prints out variables to ensure they're correct
+vars: check
+	@echo "OBS_USERNAME: $(OBS_USERNAME)"
+	@echo "GIT_BRANCH: $(GIT_BRANCH)"
+	@echo "BUILD_TARGET: $(BUILD_TARGET)"
+	@echo "OBS_WORKDIR: $(OBS_WORKDIR)"
+	@echo "OBS_PROJECT: $(OBS_PROJECT)"
+	@echo "OBS_PACKAGE: $(OBS_PACKAGE)"
 
 #-----------------------
 # Helper make targets
 #-----------------------
 
-# Remove the root filesystem tarball used for the build environment
-make-pristine:
-	$(MOCK) -v -r $(CFG) --scrub=all
-	rm -rf SRPMS RPMS
+build-init: build-clean
+	mkdir OBS
+	osc branch $(OBS_PROJECT) $(OBS_PACKAGE) $(BUILD_TARGET) $(OBS_PACKAGE) 2>/dev/null || exit 0
+	cd OBS && osc co $(BUILD_TARGET)
+	mv OBS/$(OBS_WORKDIR)/.osc OBS/.osc.proj.$$ && rm -rf OBS/$(OBS_WORKDIR)/* && cp --remove-destination -pr SOURCES/* SPECS/* OBS/$(OBS_WORKDIR) && mv OBS/.osc.proj.$$ OBS/$(OBS_WORKDIR)/.osc
 
-# Build SRPM
-make-srpm-build: $(CACHE)
-	$(MOCK) -v -r $(CFG) $(MOCK_DEFS) --unpriv --resultdir SRPMS --buildsrpm --spec SPECS/$(SPEC) --sources SOURCES
+build-clean:
+	rm -rf OBS
 
-# Build RPMs
-make-rpm-build: $(CACHE)
-	$(MOCK) -v -r $(CFG) $(MOCK_DEFS) --unpriv --resultdir RPMS SRPMS/$(SRPM)
+check:
+	@[ -e ~/.oscrc ] || make errmsg
+	@[ -x /usr/bin/osc ] || make errmsg
+	@[ -x /usr/bin/build ] || make errmsg
+	@[ -d .git ] || ERRMSG="This isn't a git repository." make -e errmsg
 
-# Build both SRPM and RPMs
-make-build: make-srpm-build make-rpm-build
-
-# Create/update the root cache containing chroot env used by mock
-$(CACHE):
-	$(MOCK) -v -r $(CFG) --init --update
-
-# Ensure the mock configuration is installed
-$(MOCK_CFG):
-	sudo cp $(CFG).cfg $@
-
+errmsg:
+	@echo -e "\nERROR: You haven't set up OBS correctly on your machine.\n $(ERRMSG)\n"
+	@exit 1
