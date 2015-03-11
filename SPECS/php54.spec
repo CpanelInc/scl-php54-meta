@@ -1,5 +1,9 @@
-%global _scl_prefix /opt/cpanel
-%global scl_name_base    php
+# Defining the package namespace
+%global ns_name ea
+%global ns_dir /opt/cpanel
+
+%global _scl_prefix %{ns_dir}
+%global scl_name_base    %{ns_name}-php
 %global scl_name_version 54
 %global scl              %{scl_name_base}%{scl_name_version}
 %scl_package %scl
@@ -10,6 +14,7 @@
 Summary:       Package that installs PHP 5.4
 Name:          %scl_name
 Version:       1.1
+Vendor:        cPanel, Inc.
 Release:       6%{?dist}
 Group:         Development/Languages
 License:       GPLv2+
