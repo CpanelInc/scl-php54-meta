@@ -57,9 +57,8 @@ local: check
 # Commits local file changes to OBS, and ensures a build is performed.
 obs: check
 	make build-init
-	cd OBS/$(OBS_WORKDIR) && osc add `osc status | awk '/^M|\?/ {print $$2}' | tr "\n" " "` 2> /dev/null || exit 0
-	cd OBS/$(OBS_WORKDIR) && osc delete `osc status | awk '/^!/ {print $$2}' | tr "\n" " "` 2> /dev/null || exit 0
-	cd OBS/$(OBS_WORKDIR) && osc ci -m "Makefile check-in - $(shell date)"
+	cd OBS/$(OBS_WORKDIR) && osc addremove -r 2> /dev/null || exit 0
+	cd OBS/$(OBS_WORKDIR) && osc ci -m "Makefile check-in - date($(shell date)) branch($(GIT_BRANCH))"
 	make build-clean
 
 # Debug target: Prints out variables to ensure they're correct
