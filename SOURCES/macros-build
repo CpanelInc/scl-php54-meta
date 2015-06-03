@@ -12,5 +12,6 @@
   %global php_extdir   %@SCL@_php_extdir
   %global php_inidir   %@SCL@_php_inidir
   %global php_incldir  %@SCL@_php_incldir
+  %global php_version  @VERSION@
 }
 

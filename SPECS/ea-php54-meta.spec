@@ -4,6 +4,7 @@
 
 %global _scl_prefix %{ns_dir}
 %global scl_name_base    %{ns_name}-php
+%global scl_macro_base   %{ns_name}_php
 %global scl_name_version 54
 %global scl              %{scl_name_base}%{scl_name_version}
 %scl_package %scl
@@ -15,7 +16,7 @@ Summary:       Package that installs PHP 5.4
 Name:          %scl_name
 Version:       1.1
 Vendor:        cPanel, Inc.
-Release:       6%{?dist}
+Release:       7%{?dist}
 Group:         Development/Languages
 License:       GPLv2+
 
@@ -76,8 +77,8 @@ EOF
 
 # generate rpm macros file for depended collections
 cat << EOF | tee scldev
-%%scl_%{scl_name_base}         %{scl}
-%%scl_prefix_%{scl_name_base}  %{scl_prefix}
+%%scl_%{scl_macro_base}         %{scl}
+%%scl_prefix_%{scl_macro_base}  %{scl_prefix}
 EOF
 
 # This section generates README file from a template and creates man page
@@ -103,16 +104,20 @@ help2man -N --section 7 ./h2m_helper -o %{scl_name}.7
 
 
 %install
+[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+
 install -D -m 644 enable %{buildroot}%{_scl_scripts}/enable
 install -D -m 644 scldev %{buildroot}%{_root_sysconfdir}/rpm/macros.%{scl_name_base}-scldevel
 install -D -m 644 %{scl_name}.7 %{buildroot}%{_mandir}/man7/%{scl_name}.7
 
 %scl_install
 
-# Add the scl_package_override macro
-sed -e 's/@SCL@/%{scl}/g' %{SOURCE0} \
+tmp_version=$(echo %{scl_name_version} | sed -re 's/([0-9])([0-9])/\1\.\2/')
+sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_version}/g" %{SOURCE0} \
   | tee -a %{buildroot}%{_root_sysconfdir}/rpm/macros.%{scl}-config
 
+%clean
+[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
 
 %files
 
@@ -135,6 +140,9 @@ sed -e 's/@SCL@/%{scl}/g' %{SOURCE0} \
 
 
 %changelog
+* Wed Jun  3 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.1-7
+- Fix macros for namespaces that contain hyphens (-); ZC-560
+
 * Mon Mar 31 2014 Honza Horak <hhorak@redhat.com> - 1.1-6
 - Fix path typo in README
   Related: #1061454
