@@ -114,6 +114,10 @@ build-init: build-clean
 build-clean:
 	rm -rf OBS
 
+# place PATH before this because cpanel overrides python location
+rpmlint:
+	@PATH=/bin:/usr/bin rpmlint SPECS/*.spec
+
 check:
 	@[ -e ~/.oscrc ] || make errmsg
 	@[ -x /usr/bin/osc ] || make errmsg
