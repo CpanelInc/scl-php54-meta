@@ -14,9 +14,9 @@
 
 Summary:       Package that installs PHP 5.4
 Name:          %scl_name
-Version:       1.1
+Version:       5.4.45
 Vendor:        cPanel, Inc.
-Release:       7%{?dist}
+Release:       1%{?dist}
 Group:         Development/Languages
 License:       GPLv2+
 
@@ -140,6 +140,9 @@ sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_ve
 
 
 %changelog
+* Wed Feb 10 2016 Jacob Perkins <jacob.perkins@cpanel.net> 5.4.45-1
+- Bumped PHP Version
+
 * Wed Jun  3 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.1-7
 - Fix macros for namespaces that contain hyphens (-); ZC-560
 
