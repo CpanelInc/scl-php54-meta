@@ -32,7 +32,7 @@ BuildRequires: iso-codes
 
 Requires:      %{?scl_prefix}php-common
 Requires:      %{?scl_prefix}php-cli
-#Requires:      %{?scl_prefix}php-pear
+Requires:      %{?scl_prefix}pear
 
 %description
 This is the main package for %scl Software Collection,
