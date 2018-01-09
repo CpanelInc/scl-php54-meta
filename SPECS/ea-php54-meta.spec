@@ -17,7 +17,7 @@ Name:          %scl_name
 Version:       5.4.45
 Vendor:        cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4578 for more details
-%define release_prefix 16
+%define release_prefix 17
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         Development/Languages
 License:       GPLv2+
@@ -45,6 +45,7 @@ that install PHP 5.4 language.
 Summary:   Package that handles %scl Software Collection.
 Group:     Development/Languages
 Requires:  scl-utils
+Requires:  %scl
 
 %description runtime
 Package shipping essential scripts to work with %scl Software Collection.
@@ -161,6 +162,9 @@ sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_ve
 
 
 %changelog
+* Tue Jan 09 2018 Rishwanth Yeddula <rish@cpanel.net> - 5.4.45-17
+- ZC-3242: Ensure the runtime package requires the meta package
+
 * Fri Nov 03 2017 Dan Muey <dan@cpanel.net> - 5.4.45-16
 - EA-3999: adjust files to get better cleanup on uninstall
 
