@@ -17,7 +17,7 @@ Name:          %scl_name
 Version:       5.4.45
 Vendor:        cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4578 for more details
-%define release_prefix 20
+%define release_prefix 21
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         Development/Languages
 License:       GPLv2+
@@ -35,6 +35,8 @@ BuildRequires: iso-codes
 
 Requires:      %{?scl_prefix}php-common
 Requires:      %{?scl_prefix}php-cli
+
+# Our code requires that pear be installed when the meta package is installed
 Requires:      %{?scl_prefix}pear
 
 %description
@@ -46,7 +48,6 @@ that install PHP 5.4 language.
 Summary:   Package that handles %scl Software Collection.
 Group:     Development/Languages
 Requires:  scl-utils
-Requires:  %scl
 
 %description runtime
 Package shipping essential scripts to work with %scl Software Collection.
@@ -178,6 +179,9 @@ sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_ve
 
 
 %changelog
+* Thu Mar 05 2020 Daniel Muey <dan@cpanel.net> - 5.4.45-21
+- ZC-6270: Fix circular deps like EA-8854
+
 * Thu Feb 15 2018 Daniel Muey <dan@cpanel.net> - 5.4.45-20
 - EA-5277: Add conflicts for ea-php##-scldevel packages
 
