@@ -17,7 +17,7 @@ Name:          %scl_name
 Version:       5.4.45
 Vendor:        cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4578 for more details
-%define release_prefix 21
+%define release_prefix 22
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         Development/Languages
 License:       GPLv2+
@@ -140,6 +140,11 @@ tmp_version=$(echo %{scl_name_version} | sed -re 's/([0-9])([0-9])/\1\.\2/')
 sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_version}/g" %{SOURCE0} \
   | tee -a %{buildroot}%{_root_sysconfdir}/rpm/macros.%{scl}-config
 
+# Remove empty share/[man|locale]/ directories
+find %{buildroot}/opt/cpanel/%{scl}/root/usr/share/man/ -type d -empty -delete
+find %{buildroot}/opt/cpanel/%{scl}/root/usr/share/locale/ -type d -empty -delete
+mkdir -p %{buildroot}/opt/cpanel/%{scl}/root/usr/share/locale
+
 %clean
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
 
@@ -157,7 +162,6 @@ sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_ve
 %dir /opt/cpanel/ea-php54/root/usr/share/doc
 %dir /opt/cpanel/ea-php54/root/usr/include
 %dir /opt/cpanel/ea-php54/root/usr/share/man
-%dir /opt/cpanel/ea-php54/root/usr/share/man/man1
 %dir /opt/cpanel/ea-php54/root/usr/bin
 %dir /opt/cpanel/ea-php54/root/usr/var
 %dir /opt/cpanel/ea-php54/root/usr/var/cache
@@ -179,6 +183,9 @@ sed -e 's/@SCL@/%{scl_macro_base}%{scl_name_version}/g' -e "s/@VERSION@/${tmp_ve
 
 
 %changelog
+* Thu Apr 23 2020 Daniel Muey <dan@cpanel.net> - 5.4.45-22
+- ZC-6611: Do not package empty share directories
+
 * Thu Mar 05 2020 Daniel Muey <dan@cpanel.net> - 5.4.45-21
 - ZC-6270: Fix circular deps like EA-8854
 
