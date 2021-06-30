@@ -17,7 +17,7 @@ Name:          %scl_name
 Version:       5.4.45
 Vendor:        cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4578 for more details
-%define release_prefix 22
+%define release_prefix 23
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         Development/Languages
 License:       GPLv2+
@@ -183,6 +183,9 @@ mkdir -p %{buildroot}/opt/cpanel/%{scl}/root/usr/share/locale
 
 
 %changelog
+* Mon Jun 28 2021 Travis Holloway <t.holloway@cpanel.net> - 5.4.45-23
+- EA-9013: Disable %check section
+
 * Thu Apr 23 2020 Daniel Muey <dan@cpanel.net> - 5.4.45-22
 - ZC-6611: Do not package empty share directories
 
