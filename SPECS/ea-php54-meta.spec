@@ -9,15 +9,12 @@
 %global scl              %{scl_name_base}%{scl_name_version}
 %scl_package %scl
 
-# do not produce empty debuginfo package
-%global debug_package %{nil}
-
 Summary:       Package that installs PHP 5.4
 Name:          %scl_name
 Version:       5.4.45
 Vendor:        cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4578 for more details
-%define release_prefix 24
+%define release_prefix 25
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         Development/Languages
 License:       GPLv2+
@@ -183,6 +180,9 @@ mkdir -p %{buildroot}/opt/cpanel/%{scl}/root/usr/share/locale
 
 
 %changelog
+* Wed May 10 2023 Brian Mendoza <brian.mendoza@cpanel.net> - 5.4.45-25
+- ZC-10936: Clean up Makefile and remove debug-package-nil
+
 * Tue Dec 28 2021 Dan Muey <dan@cpanel.net> - 5.4.45-24
 - ZC-9589: Update DISABLE_BUILD to match OBS
 
